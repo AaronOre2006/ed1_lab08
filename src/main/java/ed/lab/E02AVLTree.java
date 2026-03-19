@@ -20,7 +20,60 @@ public class E02AVLTree<T> {
     }
 
     public void delete(T value) {
+        if (search(value) != null) {
+            root = delete(root, value);
+            size--;
+        }
+    }
 
+    private Node<T> delete(Node<T> root, T value) {
+        if (root == null) {
+            return null;
+        }
+
+        int compare = comparator.compare(value, root.value);
+
+        if (compare < 0) {
+            root.left = delete(root.left, value);
+        } else if (compare > 0) {
+            root.right = delete(root.right, value);
+        } else {
+
+            if (root.left == null) {
+                return root.right;
+            }
+
+            if (root.right == null) {
+                return root.left;
+            }
+
+            Node<T> successor = root.right;
+            while (successor.left != null) {
+                successor = successor.left;
+            }
+
+            root.value = successor.value;
+            root.right = delete(root.right, successor.value);
+        }
+
+        updateHeight(root);
+        int balance = getBalance(root);
+
+        if (balance < -1) {
+            if (getBalance(root.left) > 0) {
+                root.left = rotateLeft(root.left);
+            }
+            return rotateRight(root);
+        }
+
+        if (balance > 1) {
+            if (getBalance(root.right) < 0) {
+                root.right = rotateRight(root.right);
+            }
+            return rotateLeft(root);
+        }
+
+        return root;
     }
 
     public T search(T value) {
@@ -44,7 +97,7 @@ public class E02AVLTree<T> {
     }
 
     private Node<T> search(Node<T> root, T value) {
-        if (this.root == null) {
+        if (root == null) {
             return null;
         }
 
@@ -106,7 +159,6 @@ public class E02AVLTree<T> {
     private int getBalance(Node<T> root) {
         if (root == null)
             return 0;
-
         return getHeight(root.right) - getHeight(root.left);
     }
 
@@ -161,3 +213,32 @@ public class E02AVLTree<T> {
         }
     }
 }
+
+
+/*
+ ANALISIS
+
+ 1. ¿Cuál es la complejidad de tiempo y espacio de cada una de las funciones?
+
+insert(value): Tiempo: O(log n) Espacio: O(log n)
+
+delete(value): Tiempo: O(log n) Espacio: O(log n)
+
+search(value): Tiempo: O(log n) Espacio: O(log n)
+
+height(): Tiempo: O(1) Espacio: O(1)
+
+size(): Tiempo: O(1) Espacio: O(1)
+
+
+2. ¿Cuál es la variación de las complejidades respecto a un árbol binario de búsqueda común? ¿Por qué?
+
+La diferencia principal es que en un BST normal las operaciones pueden llegar a ser O(n), mientras que en un AVL casi siempre se mantienen en O(log n).
+
+Esto pasa porque un BST común puede desbalancearse fácilmente, por ejemplo si insertas los datos en orden. En ese caso el árbol termina pareciéndose a una lista, y las operaciones dejan de ser eficientes.
+
+En cambio, el AVL se encarga de rebalancearse después de cada inserción o eliminación usando rotaciones.
+Por eso su altura se mantiene controlada y sus operaciones principales siguen siendo O(log n).
+
+
+ */
